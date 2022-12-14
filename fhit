@@ -21,7 +21,7 @@ parser.add_argument('--black_frame', '-bf', help='Search for black frames', acti
 parser.add_argument('--audio', '-a', help='Analyze the audio', action='store_true')
 parser.add_argument('--role', '-r', help='Decide if the video is main or preview. Default value is main', choices=['main', 'm', 'preview', 'p'], default='main')
 parser.add_argument('--channels', '-ch', help='Decide if the audio is stereo or dual mono. Default value is stereo', choices=['stereo', 's', 'dual_mono', 'dual mono', 'dm'], default='stereo')
-parser.add_argument('--duplicate_frames', '-dp', help='Remove duplicate frames from the video. Default value is 5', choices=[5, 6, 25])
+parser.add_argument('--duplicate_frames', '-dp', help='Remove duplicate frames from the video. Default value is 5', choices=['5', '6', '25'])
 
 
 
@@ -128,3 +128,13 @@ if audio:
 
 if duplicate_frames != None:
     remove_dp_frames(title, duplicate_frames)
+
+if video_data['timecode_track']:
+    print("Removing the timecode track...")
+    time.sleep(0.5)
+    timecode_remover(title, only_remove_timecode_track)
+    video_data['timecode_track'] = False
+    video_data['timecode_fix'] = False
+
+
+print('\nEnd of the review\n')
