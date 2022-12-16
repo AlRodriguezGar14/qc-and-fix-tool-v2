@@ -135,12 +135,15 @@ def metadata_results(read_file):
 
     if video_data['timecode_track']:
         video_data['timecode_fix'] = input_validator("Do you want to remove the timecode track? y/n", "yes", "y", "no", "n")
-        if video_data['timecode_fix']:
+        if video_data['timecode_fix'] == True:
             print('\nThe timecode track will be removed\n')
+            return True
             # global ffmpeg_audio_fix
             # ffmpeg_audio_fix = remove_timecode_and_fix_audio
         else:
             print("\nThe timecode track won't be removed\n")
+            return False
+
 
 
 

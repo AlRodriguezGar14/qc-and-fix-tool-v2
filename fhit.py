@@ -90,7 +90,7 @@ time.sleep(0.5)
 if metadata:
     # metadata analysis
     analysis(datacheck, title, 7, temp_output)
-    metadata_results(temp_output)
+    video_data['timecode_track'] = metadata_results(temp_output)
     if video_data['timecode_fix']:
         ffmpeg_audio_fix = remove_timecode_and_fix_audio
     input('Press Enter to continue...')
@@ -99,6 +99,8 @@ if black_frame:
     #black_frames_check
     black_frame_check(role, title)
     input('Press Enter to continue...')
+
+
 
 if audio:
     # audio analysis
@@ -125,6 +127,8 @@ if audio:
         timecode_remover(title, only_remove_timecode_track)
         video_data['timecode_track'] = False
         video_data['timecode_fix'] = False
+
+
 
 if duplicate_frames != None:
     remove_dp_frames(title, duplicate_frames)
