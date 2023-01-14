@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import time
-from colorama import Fore, Style
+from colorama import Fore, Back, Style
 from analyze import *
 from meta import *
 from black_frames import *
@@ -9,6 +9,8 @@ from settings import *
 from audio import *
 from actions import *
 from remove_dp_frames import remove_dp_frames
+from add_black_frames import *
+from ffmpeg_fixer import *
 import argparse
 
 
@@ -28,6 +30,8 @@ parser.add_argument('--duplicate_frames', '-dp', help='Remove duplicate frames f
 args = parser.parse_args()
 
 title = args.title.replace(' ', '')
+fixed_output = f"{title.removesuffix('.mov')}_FIXED.mov"
+
 full_review = args.full
 metadata = args.metadata
 black_frame = args.black_frame
@@ -35,8 +39,10 @@ audio = args.audio
 channels = args.channels
 if channels == 'stereo' or channels == 's':
     channels = 'stereo'
+    dual_mono = 'dual_mono=false'
 else:
     channels = 'dual mono'
+    dual_mono = 'dual_mono=true'
 
 role = args.role
 if role == 'main' or role == 'm':
@@ -67,6 +73,12 @@ print(f"\n\t{Fore.CYAN}The video role is:{Style.RESET_ALL} {role}\n\t{Fore.CYAN}
 print(f'\n\tI will work on...{metadata_note}{black_frame_note}{audio_note}{duplicate_frames_note}\n')
 
 
+remove_timecode_track, add_black_frames, fix_audio_levels = False, False, False
+fadeout_start_video = 0.0
+fadeout_start_audio = 0.0
+
+
+
 validate_input = False
 while validate_input == False:
     validate_input = input_validator('Is this information ok? Yes[y] / No[n]', 'yes', 'y', 'no', 'n')
@@ -90,14 +102,18 @@ time.sleep(0.5)
 if metadata:
     # metadata analysis
     analysis(datacheck, title, 7, temp_output)
-    video_data['timecode_track'] = metadata_results(temp_output)
-    if video_data['timecode_fix']:
-        ffmpeg_audio_fix = remove_timecode_and_fix_audio
+    remove_timecode_track = metadata_results(temp_output)
+    if remove_timecode_track:
+        print('FIX METADATA')
     input('Press Enter to continue...')
 
 if black_frame:
     #black_frames_check
-    black_frame_check(role, title)
+    add_black_frames = black_frame_check(role, title)
+    if add_black_frames:
+        fadeout_start_video, fadeout_start_audio = fadeout_position(title)
+        print('ADD BLACK FRAMES')
+        # fix_black_frames(title, ffmpeg_add_bf)
     input('Press Enter to continue...')
 
 
@@ -107,38 +123,84 @@ if audio:
     analysis(audiocheck, title, 2, temp_output)
     audio_results(temp_output)
     
-    want_fix_audio = input_validator("Do you want to fix the audio? y/n", "yes", "y", "no", "n")
-    if want_fix_audio:
+    fix_audio_levels = input_validator("Do you want to fix the audio? y/n", "yes", "y", "no", "n")
+    if fix_audio_levels:
         time.sleep(0.2)
         # Fix the audio. The code varies depending if the video is stereo or dual mono
-        if channels == "stereo":
-            audio_fix(title, audio_levels['measured_i'], audio_levels['measured_tp'], audio_levels['measured_lra'], audio_levels['measured_thresh'], "dual_mono=false", ffmpeg_audio_fix)
-        elif channels == "dual mono":
-            audio_fix(title, audio_levels['measured_i'], audio_levels['measured_tp'], audio_levels['measured_lra'], audio_levels['measured_thresh'], "dual_mono=true", ffmpeg_audio_fix)
-        video_data['timecode_track'] = False
-        video_data['timecode_fix'] = False
+
+        # if channels == "stereo":
+        #     audio_fix(title, audio_levels['measured_i'], audio_levels['measured_tp'], audio_levels['measured_lra'], audio_levels['measured_thresh'], "dual_mono=false", ffmpeg_audio_fix)
+        # elif channels == "dual mono":
+        #     audio_fix(title, audio_levels['measured_i'], audio_levels['measured_tp'], audio_levels['measured_lra'], audio_levels['measured_thresh'], "dual_mono=true", ffmpeg_audio_fix)
     else:
         print("Ok, I won't fix the audio\n")
         time.sleep(0.2)
 
-    if video_data['timecode_fix']:
-        print("Removing the timecode track...")
-        time.sleep(0.5)
-        timecode_remover(title, only_remove_timecode_track)
-        video_data['timecode_track'] = False
-        video_data['timecode_fix'] = False
+    # if video_data['timecode_fix']:
+    #     print("Removing the timecode track...")
+    #     time.sleep(0.5)
+    #     timecode_remover(title, only_remove_timecode_track)
 
 
+ffmpeg_code = ""
 
-if duplicate_frames != None:
-    remove_dp_frames(title, duplicate_frames)
 
-if video_data['timecode_track']:
-    print("Removing the timecode track...")
-    time.sleep(0.5)
-    timecode_remover(title, only_remove_timecode_track)
-    video_data['timecode_track'] = False
-    video_data['timecode_fix'] = False
+# ## OLD VERSION - New one starts after the comment block
+# # remove timecode track
+# if remove_timecode_track:
+#     ffmpeg_code = only_remove_timecode_track.format(source=title, fixed_output=fixed_output)
+#     # remove timecode track and add black frames
+#     if add_black_frames:
+#         ffmpeg_code = add_black_frames_remove_timecode.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio, fixed_output=fixed_output)
+#         # remove timecode track, add black frames and fix audio
+#         if fix_audio_levels:
+#             ffmpeg_code = ffmpeg_remove_timecode_add_black_frames_fix_audio.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output)
+#     # remove timecode track and fix audio
+#     elif fix_audio_levels and not add_black_frames:
+#         ffmpeg_code = remove_timecode_and_fix_audio.format(source=title, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output)
+# # add black frames
+# elif add_black_frames and not remove_timecode_track:
+#     ffmpeg_code = ffmpeg_add_black_frames.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio,fixed_output=fixed_output)
+#     # add black frames and fix audio levels
+#     if fix_audio_levels:
+#         ffmpeg_code = ffmpeg_add_black_frames_and_fix_audio.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output)
+#
+# # only fix audio levels
+# elif fix_audio_levels and not add_black_frames and not remove_timecode_track:
+#     ffmpeg_code = ffmpeg_audio_fix.format(source=title, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output)
+#
+
+
+fix_key = what_to_fix([remove_timecode_track, "remove_timecode_track"], 
+                      [add_black_frames, "add_black_frames"], 
+                      [fix_audio_levels, "fix_audio_levels"])
+
+ffmpeg_options = {
+        "remove_timecode_track" : only_remove_timecode_track.format(source=title, fixed_output=fixed_output),
+
+        "add_black_frames" : ffmpeg_add_black_frames.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio,fixed_output=fixed_output),
+
+        "fix_audio_levels" : ffmpeg_audio_fix.format(source=title, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output),
+
+        "remove_timecode_track-add_black_frames" : add_black_frames_remove_timecode.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio, fixed_output=fixed_output),
+
+        "remove_timecode_track-add_black_frames-fix_audio_levels" : ffmpeg_remove_timecode_add_black_frames_fix_audio.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output),
+
+        "remove_timecode_track-fix_audio_levels" : remove_timecode_and_fix_audio.format(source=title, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output),
+
+        "add_black_frames-fix_audio_levels" : ffmpeg_add_black_frames_and_fix_audio.format(source=title, start_of_fadeout_video=fadeout_start_video, start_of_fadeout_audio=fadeout_start_audio, integrated=audio_levels['measured_i'], true_peak=audio_levels['measured_tp'], lra=audio_levels['measured_lra'], threshold=audio_levels['measured_thresh'], dual_mono=dual_mono, fixed_output=fixed_output),
+
+        }
+try:
+    ffmpeg_code = ffmpeg_options[fix_key]
+except:
+    ffmpeg_code = False
+    print("Everything looks great, nothing to fix here 🎉")
+
+if ffmpeg_code:
+    ffmpeg_fix(ffmpeg_code)
+    print(f'\nCheck the {Fore.CYAN}line of ffmpeg{Style.RESET_ALL} I used to fix your title:\n {Back.BLACK}{Fore.GREEN}{ffmpeg_code}{Style.RESET_ALL} ')
+
 
 
 print('\nEnd of the review\n')

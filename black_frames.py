@@ -9,7 +9,6 @@ from analyze import *
 from actions import *
 
 def black_frame_check(role, title):
-    print(title)
     temp_bf_top = f"package_creation_bf_top{n_output}.txt"
     temp_bf_end = f"package_creation_bf_end{n_output}.txt"
 
@@ -66,11 +65,19 @@ def black_frame_check(role, title):
 
     if len(end_results) > 0:
         print(f'{Fore.BLACK}{Back.GREEN}\n I found at least {len(end_results)} black frame(s) at the end {Style.RESET_ALL}\n')
+        bottom_black_frames = True
     else:
         print(f'{Fore.BLACK}{Back.RED}\nNo black frames at the end have been found{Style.RESET_ALL}\n')
+        bottom_black_frames = False
 
     # Remove the unnecessary files (you can read the info on the terminal thanks to subprocess.Popen instead of subprocess.run)
     os.system(f"rm {temp_bf_top}")
     os.system(f"rm {temp_bf_end}")
+
+    if top_black_frames == False or bottom_black_frames == False:
+        add_bf_or_not = input_validator("Do you want to add black frames? y/n", "yes", "y", "no", "n")
+        return add_bf_or_not
+    else:
+        return False
 
 

@@ -13,8 +13,8 @@ def audio_results(read_file):
         for line in extract_audiolevels: 
             if line.__contains__("input_"):
                 new_line = line.replace('"', '').replace(':', '=').replace(' ', '').replace('input', 'measured').strip('\t \n ,')
-                search([ 'measured_i', 'measured_tp', 'measured_lra', 'measured_thresh'], new_line, audio_levels)
-                
+
+                search([ 'measured_i', 'measured_tp', 'measured_lra', 'measured_thresh'], new_line, audio_levels, True)
 
         print(f"Audio review: {Back.GREEN}{Fore.BLACK} Success {Style.RESET_ALL}\n")
         os.system(f"rm {read_file}")

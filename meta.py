@@ -20,9 +20,8 @@ def metadata_results(read_file):
         
         search([ 'codec_name', 'codec_type', 'codec_tag_string', 'width', 'height', 'sample_aspect_ratio', 'field_order', 'r_frame_rate', 'color_space', 'color_primaries', 'color_transfer', 'color_range', 'duration'], new_line, video_data)
 
-        ## We sanitize the code. If there is a data stream we Stop automatically the process.
         if video_data['timecode_track']:
-            timecode_track_status = f"\n{Back.RED}{Fore.BLACK} Timecode track found. It will be removed. {Style.RESET_ALL}\n"
+            timecode_track_status = f"\n{Back.RED}{Fore.BLACK} Timecode track found. {Style.RESET_ALL}\n"
             break
 
     print(timecode_track_status)
