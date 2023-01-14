@@ -3,7 +3,8 @@ import sys
 import time
 from colorama import Back, Style
 from audio import *
-from settings import *
+from ffmpeg_inputs import *
+from data import *
 from meta import *
 from actions import *
 

@@ -2,7 +2,8 @@ import sys
 import subprocess
 from colorama import Fore, Back, Style
 from analyze import *
-from settings import *
+from ffmpeg_inputs import *
+from data import *
 from actions import *
 
 
@@ -15,6 +16,6 @@ def ffmpeg_fix(code):
         sys.stdout.write(line)
     fix.wait()
 
-    print(f'\n\n{Back.GREEN}{Fore.BLACK}YOUR VIDEO HAS BEEN FIXED{Style.RESET_ALL}\n')
+    print(f'\n\n{Back.GREEN}{Fore.BLACK}Your video has been fixed{Style.RESET_ALL}\n')
 
 

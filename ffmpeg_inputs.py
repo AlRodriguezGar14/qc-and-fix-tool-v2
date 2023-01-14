@@ -1,12 +1,3 @@
-import random
-
-
-n_output = random.randint(99999999, 99999999999)
-temp_output = f"package_creation_audiolevels{n_output}.txt"
-
-
-
-
 # This is a magic number, but I want to avoid the Shell=True at the beginning, so,
 # index for analysis function is 2
 audiocheck = {'command': ['ffmpeg', '-i', 'SOURCE', '-vn', '-filter:a', 'loudnorm=print_format=json', '-f', 'null', '-',], 'output': 'stderr'}
@@ -49,33 +40,5 @@ remove_tmcd = ' -dn -map_metadata -1 '
 add_bfs = ' -vf "fade=t=in:s=1:n=4, fade=t=out:s={start_of_fadeout_video}:n=2" -af "afade=t=in:st=0:d=0.5, afade=t=out:st={start_of_fadeout_audio}:d=0.2" '
 
 fix_aud = ' -filter:a loudnorm=i=-24.0:tp=-6:print_format=summary:{integrated}:{true_peak}:{lra}:{threshold}:{dual_mono} '
-
-
-
-# The dictionary where the clean information goes
-# Its information is updated at audio results function
-audio_levels = {
-        'name':'audio levels',
-        'measured_i' : "",
-        'measured_tp' : "",
-        'measured_lra' : "",
-        'measured_thresh' : "",
-        'dual_mono' : "",
-        }
-audio_analyzed = False
-video_meta_analyzed = False
-# This file is where I move all the information that ffmpeg prints to the console
-# later it's going to be deleted, that's why I use a random generated number (not to remove anything useful)
-
-
-
-# The dictionary with the metadata info
-global video_data
-video_data = {'name':'video metadata', 'timecode_track':False, 'timecode_fix':False, 'black_frames_fix':False,}
-
-
-
-
-
 
 

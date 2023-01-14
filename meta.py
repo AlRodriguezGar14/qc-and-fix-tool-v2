@@ -1,11 +1,12 @@
-
 import os
 import sys
 import subprocess
 from colorama import Fore, Back, Style
 from analyze import *
-from settings import *
 from actions import *
+from ffmpeg_inputs import *
+from data import *
+
 
 def metadata_results(read_file):
     
@@ -147,19 +148,6 @@ def metadata_results(read_file):
 
 
 
-def timecode_remover(title, code):
-    fixed_output = f"{title.removesuffix('.mov')}_FIXED.mov"
-    
-    fix_code = code.format(source=title, fixed_output=fixed_output)
-    fix = subprocess.Popen(fix_code, shell=True, text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    for line in fix.stderr:
-        sys.stdout.write(line)
-    fix.wait
-
-    print('\nThe timecode track has been removed\n')
-
-
-    
 
 
 
