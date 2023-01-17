@@ -46,24 +46,36 @@ def want_to_analyze(target, function, title):
 
 # For security won't use Shell=True until the next function when everything is ok
 # Analysis of the audio levels.
-def analysis(what_do, input, source_index, temp_output):
+
+def analysis(what_do, input):
     with open(temp_output, 'w') as f:
 
         print('\nTime to do some research. I will have all the information in a moment.\nThis can take some minutes, so don not worry. You will have your report ⏳\n')
         
         # I don't want to launch to Shell=True in order to avoid malware (if they introduce something that is not a title, the script will crash). That's why I have to find where in the array is the title. It makes the code uglier and slower to write/scalate/fix, but it's safer.
-        what_do['command'][source_index] = input
-        
+        # ffmpeg prints the output to the stderr while ffprobe prints the output directly to stdout
+        print_to = ""
+        for index, what_check in enumerate(what_do):
+            if what_check == "SOURCE":
+                what_do[index] = input
+            if what_check == "ffmpeg":
+                print_to = 'stderr'
+            if what_check == 'ffprobe':
+                print_to = 'stdout'
+
+
         # Thanks to using Popen, I display the subprocess in the screeen while it is being written at temp_output
-        scan = subprocess.Popen(what_do['command'], stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        scan = subprocess.Popen(what_do, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        
+        
 
         # Some commands save the information at stderr and some others at stdout. The only way to know this is testing the code. (this code block can be improved in the future)
-        if what_do['output'] == 'stderr':
+        if print_to == 'stderr':
             for line in scan.stderr:
                 sys.stdout.write(line)
                 f.write(line)
             scan.wait()
-        elif what_do['output'] == 'stdout':
+        elif print_to == 'stdout':
             for line in scan.stdout:
                 sys.stderr.write(line)
                 f.write(line)
@@ -73,10 +85,5 @@ def analysis(what_do, input, source_index, temp_output):
 
         if scan.returncode != 0:
             print(f"{Back.RED}Error{Style.RESET_ALL}")
-
- 
-
-       
-
 
 

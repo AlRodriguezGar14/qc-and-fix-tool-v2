@@ -104,7 +104,7 @@ time.sleep(0.5)
 
 if metadata:
     # metadata analysis
-    analysis(datacheck, title, 7, temp_output)
+    analysis(datacheck, title)
     remove_timecode_track = metadata_results(temp_output)
     if remove_timecode_track:
         print(f'\nRemove additional timecode: {Back.GREEN}{Fore.BLACK} True {Style.RESET_ALL}\n')
@@ -123,7 +123,7 @@ if black_frame:
 
 if audio:
     # audio analysis
-    analysis(audiocheck, title, 2, temp_output)
+    analysis(audiocheck, title)
     audio_results(temp_output)
     
     fix_audio_levels = input_validator("Do you want to fix the audio? y/n", "yes", "y", "no", "n")

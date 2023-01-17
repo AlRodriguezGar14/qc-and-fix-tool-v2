@@ -1,9 +1,9 @@
-# This is a magic number, but I want to avoid the Shell=True at the beginning, so,
-# index for analysis function is 2
-audiocheck = {'command': ['ffmpeg', '-i', 'SOURCE', '-vn', '-filter:a', 'loudnorm=print_format=json', '-f', 'null', '-',], 'output': 'stderr'}
+# ffmpeg writes the process in the stderr
+# The first input is a list for safety related to how sys works
+audiocheck = ['ffmpeg', '-i', 'SOURCE', '-vn', '-filter:a', 'loudnorm=print_format=json', '-f', 'null', '-',]
 
-# index for analysis function is 7
-datacheck = {'command': ['ffprobe', '-hide_banner', '-loglevel', 'warning', '-print_format', 'json', '-show_streams',  'source', ], 'output': 'stdout'}
+# ffprobe writes the output in the stdout
+datacheck = ['ffprobe', '-hide_banner', '-loglevel', 'warning', '-print_format', 'json', '-show_streams',  'SOURCE', ]
 
 
 ffmpeg_audio_fix = 'ffmpeg -i {source} -c:v copy -colorspace bt709 -color_primaries bt709 -color_trc bt709 -movflags write_colr -c:a pcm_s24le -ar 48k -filter:a loudnorm=i=-24.0:tp=-6:print_format=summary:{integrated}:{true_peak}:{lra}:{threshold}:{dual_mono} {fixed_output}' 
