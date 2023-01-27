@@ -88,7 +88,7 @@ def fadeout_position(input):
         duration = float(video_data['duration_copy'].removeprefix('duration ='))
     except:
         print('Let me get the information needed for this fix')
-        analysis(datacheck, input, 7, temp_output)
+        analysis(datacheck, input)
         metadata_results(temp_output)
         duration = float(video_data['duration_copy'].removeprefix('duration ='))
 
