@@ -1,6 +1,7 @@
 import subprocess
 import os
 import sys
+import re
 from colorama import Fore, Back, Style
 from ffmpeg_inputs import *
 from data import *
@@ -40,10 +41,15 @@ def black_frame_check(role, title):
 
     top_black_frames = False
     for line in extract_bf_top:
+        formatted_line = line
+        if "Parsed_blackframe_0" in line:
+            parsed_bf_prefix = re.findall(r'\[(.*?)\]', line)
+            formatted_line = re.sub(r'\[(.*?)\]', f'{Fore.GREEN}[{parsed_bf_prefix[0]}]{Style.RESET_ALL}', line).replace('\n', '')
         
-        if line.__contains__("frame:0"):
+        if line.__contains__("frame:0 pblack:100"):
             top_black_frames = True
             # We only check how many black frames there are if the very first one is black. If not, it's an auto-fail
+
         if top_black_frames == True:    
             if line.__contains__("black:100"):
                 # We already know what we need to know. 
@@ -51,16 +57,22 @@ def black_frame_check(role, title):
                 # 1 'Success' means 1 black frame. We only have to count the length of the array.
                 new_line = line.replace(line, 'Success')
                 top_results.append(new_line)
+                print(formatted_line)
+        
 
-    if len(top_results) > 0:
-        print(f'{Fore.BLACK}{Back.GREEN}\n I found at least {len(top_results)} black frame(s) at the top {Style.RESET_ALL}')
-    else:
-        print(f"{Fore.BLACK}{Back.RED}\nThe title does't start with a black frame{Style.RESET_ALL}")
 
     for line in extract_bf_end:
         if line.__contains__("black:100"):
+            parsed_bf_prefix = re.findall(r'\[(.*?)\]', line)
+            formatted_line = re.sub(r'\[(.*?)\]', f'{Fore.BLUE}[{parsed_bf_prefix[0]}]{Style.RESET_ALL}', line)
+            print(formatted_line)
             new_line = line.replace(line, 'Success')
             end_results.append(new_line)
+
+    if len(top_results) > 0:
+        print(f'{Fore.BLACK}{Back.GREEN}\n I found at least {len(top_results)} black frame(s) at the top {Style.RESET_ALL}\n')
+    else:
+        print(f"{Fore.BLACK}{Back.RED}\nThe title does't start with a black frame{Style.RESET_ALL}")
 
     if len(end_results) > 0:
         print(f'{Fore.BLACK}{Back.GREEN}\n I found at least {len(end_results)} black frame(s) at the end {Style.RESET_ALL}\n')
