@@ -19,7 +19,8 @@ def metadata_results(read_file):
     for line in extract_data:
         new_line = line.strip(' , \t \n').replace('":', ' =').replace('"', '')
         
-        search([ 'codec_name', 'codec_type', 'codec_tag_string', 'width', 'height', 'sample_aspect_ratio', 'field_order', 'r_frame_rate', 'color_space', 'color_primaries', 'color_transfer', 'color_range', 'duration'], new_line, video_data)
+        # color_range removed. ffprobe is not catching it (unknown error)
+        search([ 'codec_name', 'codec_type', 'codec_tag_string', 'width', 'height', 'sample_aspect_ratio', 'field_order', 'r_frame_rate', 'color_space', 'color_primaries', 'color_transfer', 'duration'], new_line, video_data)
 
         if video_data['timecode_track']:
             timecode_track_status = f"\n{Back.RED}{Fore.BLACK} Timecode track found. {Style.RESET_ALL}\n"
@@ -69,7 +70,7 @@ def metadata_results(read_file):
         ["Color Space", "color_space"],
         ["Color Primaries", "color_primaries"], 
         ["Color Transfer", "color_transfer"],
-        ["Color Range", "color_range"],
+        # ["Color Range", "color_range"],
         ["Duration", "duration"],
         ]
 
@@ -126,7 +127,7 @@ def metadata_results(read_file):
                 ["Color Space", "color_space"],
                 ["Color Primaries", "color_primaries"], 
                 ["Color Transfer", "color_transfer"],
-                ["Color Range", "color_range"],
+                # ["Color Range", "color_range"],
                 ["Duration", "duration"],
                 ]
 
