@@ -22,17 +22,17 @@ def search(list_of_keywords, where_search, where_save, avoid_copy=False):
 
 
 
-def print_results(printables, dict, has_space):
+def print_results(printables, dict, from_json):
+
     print(f"\n{Fore.CYAN}These are the values for {Back.CYAN}{Fore.BLACK} {dict['name']}: {Style.RESET_ALL}\n")
+
     for element in printables:
-        if has_space == True:
-            prefix = element[1].removesuffix('_copy') + ' = '
+        if from_json == True:
+            print(f"\t{element[0]}: {Fore.CYAN}{dict[element[1]]}{Style.RESET_ALL}")
         else:
             prefix = element[1].removesuffix('_copy') + '='
-
-        print(f"\t{element[0]}: {Fore.CYAN}{dict[element[1]].removeprefix(prefix)}{Style.RESET_ALL}")
+            print(f"\t{element[0]}: {Fore.CYAN}{dict[element[1]].removeprefix(prefix)}{Style.RESET_ALL}")
     print("\n")
-
 
 
 def input_validator(question, *options):

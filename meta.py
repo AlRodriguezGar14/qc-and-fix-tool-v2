@@ -30,28 +30,15 @@ def metadata_results(read_file):
     with open(read_file, 'r') as f:
         extract_data = f.read()
 
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
-    print("===========\n")
     data = json.loads(extract_data)
     
 
-    values_to_search = [ 'codec_name', 'codec_type', 'codec_tag_string', 'width', 'height', 'sample_aspect_ratio', 'field_order', 'r_frame_rate', 'color_space', 'color_primaries', 'color_transfer', 'duration']
+    values_to_search = [ 'codec_name', 'codec_type', 'codec_tag_string', 'width', 'height', 'sample_aspect_ratio', 'field_order', 'r_frame_rate', 'color_space', 'color_range', 'color_primaries', 'color_transfer', 'duration']
 
     for stream in data["streams"]:
         if stream["codec_type"] == "video":
             for value in values_to_search:
-                video_data[value] = stream.get(value, "Info Missing")
+                video_data[value] = stream.get(value, "-")
 
         if stream["codec_type"] == "data":
             video_data["timecode_track"] = True
@@ -60,14 +47,48 @@ def metadata_results(read_file):
 
     video_data["duration"] = extract_duration(video_data["duration"])
     
-    printables = []
-    for key, value in video_data.items():
-        
-        printables.append([key, value])
-    
-    print(printables)
 
-    return
+    printables = [
+        ["Codec Type", "codec_type"],
+        ["Codec Name", "codec_name"],
+        ["Width", "width"],
+        ["Height", "height"],
+        ["Codec Tag String", "codec_tag_string"],
+        ["Aspect Ratio", "sample_aspect_ratio"],
+        ["Field Order", "field_order"],
+        ["Frame Rate (in fps)", "r_frame_rate"],
+        ["Color Space", "color_space"],
+        ["Color Primaries", "color_primaries"], 
+        ["Color Transfer", "color_transfer"],
+        ["Color Range", "color_range"],
+        ["Duration", "duration"],
+        ]
+    
+    print_results(printables, video_data, from_json=True)
+
+
+    timecode_track_status = f"\n{Back.GREEN}{Fore.BLACK} No timecode track found {Style.RESET_ALL}\n"
+
+    if video_data['timecode_track']:
+        timecode_track_status = f"\n{Back.RED}{Fore.BLACK} Timecode track found. {Style.RESET_ALL}\n"
+
+    print(timecode_track_status)
+
+
+    # Remove the temporary file. If we reach here there has not been errors. That means that it is not necessary.    
+    os.system(f"rm {read_file}")
+
+
+
+    if video_data["timecode_track"]:
+        video_data['timecode_fix'] = input_validator("Do you want to remove the timecode track? y/n", "yes", "y", "no", "n")
+        if video_data['timecode_fix'] == True:
+            print('\nThe timecode track will be removed\n')
+            return True
+        else:
+            print("\nThe timecode track won't be removed\n")
+
+    return False
 # def old_metadata_results(read_file):
 #     
 #     data_results = open(read_file, 'r')

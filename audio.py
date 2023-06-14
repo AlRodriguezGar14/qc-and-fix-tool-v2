@@ -27,6 +27,6 @@ def audio_results(read_file):
                 ["LRA", "measured_lra"],
                 ["Threshold", "measured_thresh"],
                 ]
-        print_results(printables, audio_levels, has_space=False)
+        print_results(printables, audio_levels, from_json=False)
 
 
